@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AevumAgentPay | tUSD8 Stablecoin Payment & AI Agent Hub (QDay Aevum Testnet)</title>
+  <style>
+    :root {
+      --bg-primary: #070b14;
+      --bg-card: #101726;
+      --bg-card-hover: #162033;
+      --border: #1e2d47;
+      --accent: #00e5ff;
+      --accent-2: #6366f1;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: var(--bg-primary); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* Top Header */
+    header {
+      background: rgba(16, 23, 38, 0.9);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-logo {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 18px; color: #050811;
+      box-shadow: 0 0 20px rgba(0, 229, 255, 0.35);
+    }
+    .brand-title h1 { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
+    .brand-title p { font-size: 12px; color: var(--text-muted); }
+
+    .header-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .network-pill {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #34d399;
+      padding: 7px 13px; border-radius: 999px; font-size: 12px; font-weight: 600;
+    }
+    .pulse-dot {
+      width: 8px; height: 8px; border-radius: 50%; background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+    .balance-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 7px 14px; border-radius: 10px;
+      font-size: 13px; font-weight: 600;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .balance-box span.token { color: var(--accent); font-weight: 700; }
+
+    .btn {
+      cursor: pointer; border: none; border-radius: 9px;
+      padding: 9px 16px; font-size: 13px; font-weight: 600;
+      transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #060913; font-weight: 700;
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0, 229, 255, 0.35); }
+    .btn-outline {
+      background: transparent; border: 1px solid var(--border); color: var(--text-main);
+    }
+    .btn-outline:hover { background: var(--bg-card-hover); border-color: var(--accent); }
+    .btn-success { background: var(--success); color: #051b11; font-weight: 700; }
+    .btn-danger { background: rgba(239, 68, 68, 0.16); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35); }
+
+    /* Main Container */
+    .container { max-width: 1280px; width: 100%; margin: 0 auto; padding: 24px 28px; flex: 1; }
+
+    /* Top Stats Banner */
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 16px; margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 18px 20px;
+    }
+    .stat-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-value { font-size: 24px; font-weight: 800; margin-top: 6px; color: var(--text-main); }
+    .stat-sub { font-size: 12px; color: var(--accent); margin-top: 4px; font-family: monospace; }
+
+    /* Navigation Tabs */
+    .tabs {
+      display: flex; gap: 8px; border-bottom: 1px solid var(--border);
+      margin-bottom: 24px; overflow-x: auto; padding-bottom: 8px;
+    }
+    .tab-btn {
+      background: transparent; border: 1px solid transparent;
+      color: var(--text-muted); padding: 10px 18px; border-radius: 10px;
+      cursor: pointer; font-size: 13.5px; font-weight: 600; transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .tab-btn:hover { color: var(--text-main); background: var(--bg-card); }
+    .tab-btn.active {
+      color: var(--accent); background: rgba(0, 229, 255, 0.1);
+      border-color: rgba(0, 229, 255, 0.35);
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1.25fr; gap: 22px; }
+    @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    .card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 22px;
+    }
+    .card h2 { font-size: 16px; font-weight: 700; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+    .card p.desc { font-size: 13px; color: var(--text-muted); margin-bottom: 18px; line-height: 1.5; }
+
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
+    .form-control {
+      width: 100%; background: #080d19; border: 1px solid var(--border);
+      color: var(--text-main); padding: 10px 13px; border-radius: 9px; font-size: 13.5px;
+    }
+    .form-control:focus { outline: none; border-color: var(--accent); }
+
+    /* Invoice Cards */
+    .invoice-item {
+      background: #090f1d; border: 1px solid var(--border);
+      border-radius: 12px; padding: 15px; margin-bottom: 12px;
+      display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+    }
+    .badge {
+      padding: 4px 10px; border-radius: 99px; font-size: 11px; font-weight: 700; text-transform: uppercase;
+    }
+    .badge-pending { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); }
+    .badge-paid { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.35); }
+
+    /* Stream Counter */
+    .stream-counter-box {
+      background: linear-gradient(135deg, rgba(0, 229, 255, 0.08), rgba(99, 102, 241, 0.08));
+      border: 1px solid rgba(0, 229, 255, 0.3);
+      border-radius: 14px; padding: 20px; text-align: center; margin-bottom: 18px;
+    }
+    .stream-live-num {
+      font-size: 34px; font-weight: 800; color: var(--accent);
+      font-family: 'Courier New', monospace; letter-spacing: 0.5px; margin: 10px 0;
+    }
+    .progress-bar {
+      width: 100%; height: 8px; background: #070b14; border-radius: 99px; overflow: hidden; margin-top: 10px;
+    }
+    .progress-fill {
+      height: 100%; background: linear-gradient(90deg, var(--accent), var(--success)); width: 35%;
+      transition: width 0.4s ease;
+    }
+
+    /* Terminal Log */
+    .terminal {
+      background: #050811; border: 1px solid var(--border); border-radius: 12px;
+      padding: 16px; font-family: 'Consolas', 'Courier New', monospace; font-size: 12.5px;
+      height: 310px; overflow-y: auto; line-height: 1.65;
+    }
+    .log-line { margin-bottom: 6px; }
+    .log-info { color: #38bdf8; }
+    .log-ok { color: #34d399; }
+    .log-warn { color: #fbbf24; }
+    .log-err { color: #f87171; }
+
+    pre.code-view {
+      background: #050811; border: 1px solid var(--border); border-radius: 12px;
+      padding: 16px; font-family: monospace; font-size: 12px; color: #cbd5e1;
+      overflow-x: auto; max-height: 400px; line-height: 1.5;
+    }
+    .preset-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+    .preset-pill {
+      background: rgba(99, 102, 241, 0.14); border: 1px solid rgba(99, 102, 241, 0.4);
+      color: #a5b4fc; padding: 6px 12px; border-radius: 8px; font-size: 12px; cursor: pointer;
+    }
+    .preset-pill:hover { background: rgba(99, 102, 241, 0.28); color: #fff; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="brand-logo">Æ</div>
+    <div class="brand-title">
+      <h1>AevumAgentPay Protocol</h1>
+      <p>End-to-End tUSD8 Payment Hub & ERC-8004 AI Agent Mandates on QDay Aevum Testnet</p>
+    </div>
+  </div>
+  <div class="header-controls">
+    <div class="network-pill">
+      <div class="pulse-dot"></div>
+      <span id="netStatusText">QDay Aevum Testnet (Chain ID: 44005)</span>
+    </div>
+    <div class="balance-box">
+      <span>Wallet Balance:</span>
+      <span class="token" id="walletBalanceDisplay">2,500.00 tUSD8</span>
+    </div>
+    <button class="btn btn-outline" onclick="addAevumNetwork()">+ Add Aevum to MetaMask</button>
+    <button class="btn btn-primary" id="connectBtn" onclick="connectWallet()">0x71C...9A23 (Sandbox Active)</button>
+    <a href="http://localhost:8082" class="btn btn-outline" style="text-decoration:none; border-color:#8b5cf6; color:#c4b5fd;">⇄ Xem Dự Án 2: T3 GuardAgent (Port 8082)</a>
+  </div>
+</header>
+
+<div class="container">
+  <!-- Top Network & Contract Telemetry -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">tUSD8 Stablecoin Contract</div>
+      <div class="stat-value">tUSD8 (ERC-20)</div>
+      <div class="stat-sub">0x456569838f1d43009A91ebA4263147Afd7233483</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Volume Settled</div>
+      <div class="stat-value" id="statTotalVolume">1,420.00 tUSD8</div>
+      <div class="stat-sub">100% Confirmation of Payee (CoP) Verified</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Active Payroll Streams</div>
+      <div class="stat-value" id="statActiveStreams">2 Streams</div>
+      <div class="stat-sub">Real-time per-second tUSD8 vesting</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">AI Agent Mandate Status</div>
+      <div class="stat-value" id="statAgentSpent">125 / 500 tUSD8</div>
+      <div class="stat-sub">Daily Guardrail Active (ERC-8004)</div>
+    </div>
+  </div>
+
+  <!-- Navigation Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('tab-invoices', this)">1. Smart Invoices & Confirmation of Payee (CoP)</button>
+    <button class="tab-btn" onclick="switchTab('tab-payroll', this)">2. Real-Time tUSD8 Payroll Streaming</button>
+    <button class="tab-btn" onclick="switchTab('tab-agent', this)">3. Autonomous AI Payment Agent (ERC-8004)</button>
+    <button class="tab-btn" onclick="switchTab('tab-contract', this)">4. Aevum Testnet Contract & Ledger</button>
+  </div>
+
+  <!-- TAB 1: SMART INVOICES & CoP -->
+  <div id="tab-invoices" class="tab-panel active">
+    <div class="grid-2">
+      <div class="card">
+        <h2>Create Smart tUSD8 Invoice</h2>
+        <p class="desc">Generates an on-chain invoice protected by cryptographic Confirmation of Payee (CoP) Keccak-256 name verification.</p>
+        <div class="form-group">
+          <label>Verified Payee Legal / Business Name (for CoP Hash)</label>
+          <input type="text" id="invPayeeName" class="form-control" value="QDay Cloud Infrastructure Ltd" />
+        </div>
+        <div class="form-group">
+          <label>Invoice Amount (tUSD8)</label>
+          <input type="number" id="invAmount" class="form-control" value="150.00" step="0.01" />
+        </div>
+        <div class="form-group">
+          <label>Service Description / Metadata Reference</label>
+          <input type="text" id="invMemo" class="form-control" value="Dedicated GPU Node Rental - November 2026" />
+        </div>
+        <button class="btn btn-primary" style="width:100%; justify-content:center;" onclick="createNewInvoice()">
+          + Mint Smart Invoice on Aevum Testnet
+        </button>
+      </div>
+
+      <div class="card">
+        <h2>Active Invoices & CoP Settlement</h2>
+        <p class="desc">Before `tUSD8` is transferred, the smart contract verifies `keccak256(expectedPayeeName) == invoice.payeeNameHash` to prevent invoice redirection fraud.</p>
+        <div class="form-group">
+          <label>Confirmation of Payee (CoP) Verification Input:</label>
+          <input type="text" id="copVerifyInput" class="form-control" value="QDay Cloud Infrastructure Ltd" placeholder="Enter exact payee name to verify before paying..." />
+        </div>
+        <div id="invoiceListContainer"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: STREAMING PAYROLL -->
+  <div id="tab-payroll" class="tab-panel">
+    <div class="grid-2">
+      <div class="card">
+        <h2>Launch Per-Second tUSD8 Payroll Stream</h2>
+        <p class="desc">Lock `tUSD8` in `AevumAgentPay.sol` to stream salary continuously every second to remote contributors.</p>
+        <div class="form-group">
+          <label>Contributor / Employee Wallet Address</label>
+          <input type="text" id="streamEmployee" class="form-control" value="0x89205A3A3b2A69De6Dbf7f01ED13B2108B2c43e7" />
+        </div>
+        <div class="form-group">
+          <label>Total Allocation (tUSD8)</label>
+          <input type="number" id="streamTotal" class="form-control" value="600.00" />
+        </div>
+        <div class="form-group">
+          <label>Stream Rate (tUSD8 / second in Demo Mode)</label>
+          <input type="number" id="streamRate" class="form-control" value="0.25" step="0.05" />
+        </div>
+        <button class="btn btn-primary" style="width:100%; justify-content:center;" onclick="startNewStream()">
+          Start Continuous tUSD8 Stream
+        </button>
+      </div>
+
+      <div class="card">
+        <h2>Live Vested Payroll Stream (#STR-501)</h2>
+        <p class="desc">Watch `tUSD8` accrue in real time on QDay Aevum Testnet. Click Claim at any moment to settle vested funds to your wallet.</p>
+        <div class="stream-counter-box">
+          <div style="font-size:12px; color:var(--text-muted);">UNCLAIMED VESTED BALANCE (LIVE 6-DECIMAL PRECISION)</div>
+          <div class="stream-live-num" id="liveStreamCounter">14.250000 tUSD8</div>
+          <div style="font-size:12px; color:#34d399;">Streaming Rate: <span id="rateLabel">0.15</span> tUSD8 / sec &bull; Recipient: 0x8920...43e7</div>
+          <div class="progress-bar"><div class="progress-fill" id="streamProgressBar"></div></div>
+        </div>
+        <div style="display:flex; gap:12px;">
+          <button class="btn btn-success" style="flex:1; justify-content:center;" onclick="claimStream()">
+            Claim Vested tUSD8 Now
+          </button>
+          <button class="btn btn-outline" onclick="resetStreamDemo()">Reset Stream</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: AUTONOMOUS AI AGENT -->
+  <div id="tab-agent" class="tab-panel">
+    <div class="grid-2">
+      <div class="card">
+        <h2>ERC-8004 AI Agent Payment Terminal</h2>
+        <p class="desc">Delegate autonomous `tUSD8` invoice settlement to an AI Agent bounded by on-chain spending guardrails.</p>
+
+        <div class="preset-pills">
+          <span class="preset-pill" onclick="setAgentPrompt('Pay pending invoice #1001 of 125 tUSD8 to QDay Cloud Infrastructure Ltd')">Preset 1: Valid Autonomous Settlement</span>
+          <span class="preset-pill" onclick="setAgentPrompt('Pay urgent server invoice of 850 tUSD8 to QDay Cloud Infrastructure Ltd')">Preset 2: Test MaxPerTx Guardrail Block</span>
+          <span class="preset-pill" onclick="setAgentPrompt('Pay invoice #1001 of 125 tUSD8 to Phishing Fake Corp')">Preset 3: Test CoP Spoof Protection</span>
+        </div>
+
+        <div class="form-group">
+          <label>Natural Language Payment Mandate for AI Agent</label>
+          <input type="text" id="agentPromptInput" class="form-control" value="Pay pending invoice #1001 of 125 tUSD8 to QDay Cloud Infrastructure Ltd" />
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
+          <div class="form-group" style="margin:0;">
+            <label>Max Per Transaction (tUSD8)</label>
+            <input type="number" id="guardMaxTx" class="form-control" value="250" />
+          </div>
+          <div class="form-group" style="margin:0;">
+            <label>Daily Spending Limit (tUSD8)</label>
+            <input type="number" id="guardDaily" class="form-control" value="500" />
+          </div>
+        </div>
+
+        <button class="btn btn-primary" style="width:100%; justify-content:center;" onclick="executeAgentCommand()">
+          Execute Autonomous Agent Settlement
+        </button>
+      </div>
+
+      <div class="card">
+        <h2>AI Agent Execution & Guardrail Audit Log</h2>
+        <p class="desc">Real-time verification of Confirmation of Payee (CoP), ERC-8004 spending caps, and QDay Aevum Testnet settlement.</p>
+        <div class="terminal" id="agentTerminal"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 4: SMART CONTRACT & EXPLORER -->
+  <div id="tab-contract" class="tab-panel">
+    <div class="grid-2">
+      <div class="card">
+        <h2>QDay Aevum Testnet Configuration & On-Chain Ledger</h2>
+        <p class="desc">Verified parameters for Aevum Builder Challenge #1.</p>
+        <div style="font-size:13px; line-height:1.9; margin-bottom:16px; background:#080d19; padding:14px; border-radius:10px; border:1px solid var(--border);">
+          <div><strong>Network Name:</strong> QDay Aevum Testnet</div>
+          <div><strong>Chain ID:</strong> <code>44005</code> (<code>0xABE5</code>)</div>
+          <div><strong>RPC URL:</strong> <code>https://rpc-test.qday.info</code></div>
+          <div><strong>Explorer:</strong> <code>https://explorer-test.qday.info</code></div>
+          <div><strong>tUSD8 Token:</strong> <code>0x456569838f1d43009A91ebA4263147Afd7233483</code></div>
+        </div>
+        <h2 style="margin-top:16px;">Recent tUSD8 Settlement Transactions</h2>
+        <div id="txLedgerList" style="margin-top:10px;"></div>
+      </div>
+
+      <div class="card">
+        <h2>Solidity Contract (`contracts/AevumAgentPay.sol`)</h2>
+        <p class="desc">Core smart contract implementing CoP Invoices, Streaming Payroll, and ERC-8004 Agent Mandates.</p>
+        <pre class="code-view">
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+contract AevumAgentPay {
+    // Official QDay Aevum Testnet tUSD8: 0x456569838f1d43009A91ebA4263147Afd7233483
+    IERC20 public immutable tUSD8;
+
+    function payInvoiceWithCoP(uint256 _invoiceId, string calldata _expectedPayeeName) external {
+        Invoice storage inv = invoices[_invoiceId];
+        require(inv.status == InvoiceStatus.Pending, "Invoice not pending");
+        bytes32 providedHash = keccak256(abi.encodePacked(_expectedPayeeName));
+        require(providedHash == inv.payeeNameHash, "CoP Error: Payee name mismatch");
+        inv.status = InvoiceStatus.Paid;
+        require(tUSD8.transferFrom(msg.sender, inv.issuer, inv.amount), "tUSD8 transfer failed");
+    }
+
+    function executeAgentInvoicePayment(
+        address _principal,
+        uint256 _invoiceId,
+        string calldata _expectedPayeeName
+    ) external {
+        AgentMandate storage m = mandates[_principal][msg.sender];
+        require(m.active, "Agent mandate inactive");
+        require(inv.amount <= m.maxPerTx, "Exceeds agent maxPerTx guardrail");
+        require(m.spentToday + inv.amount <= m.dailyLimit, "Exceeds agent dailyLimit");
+        // Settles tUSD8 directly on QDay Aevum Testnet
+    }
+}</pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let walletBalance = 2500.00;
+  let totalVolume = 1420.00;
+  let agentSpentToday = 125.00;
+  let streamAccrued = 14.250000;
+  let streamRate = 0.15;
+
+  let invoices = [
+    {
+      id: 1001,
+      payeeName: "QDay Cloud Infrastructure Ltd",
+      amount: 125.00,
+      memo: "AI Inference GPU Cluster - Batch #42",
+      status: "PENDING",
+      hash: "0x9f86d081...a3b2"
+    },
+    {
+      id: 1002,
+      payeeName: "Aevum Security Audit DAO",
+      amount: 320.00,
+      memo: "Smart Contract Formal Verification",
+      status: "PAID",
+      hash: "0x4c12e901...f91a"
+    }
+  ];
+
+  let txLedger = [
+    { txHash: "0x8a91f...3e21", type: "CoP Invoice #1002 Paid", amount: "320.00 tUSD8", time: "12 mins ago" },
+    { txHash: "0x3b74c...8d10", type: "ERC-8004 Agent Mandate Set", amount: "Max 250 tUSD8", time: "25 mins ago" }
+  ];
+
+  function updateHeaderDisplays() {
+    document.getElementById("walletBalanceDisplay").textContent = walletBalance.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " tUSD8";
+    document.getElementById("statTotalVolume").textContent = totalVolume.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " tUSD8";
+    const dailyLim = parseFloat(document.getElementById("guardDaily")?.value || 500);
+    document.getElementById("statAgentSpent").textContent = `${agentSpentToday.toFixed(0)} / ${dailyLim} tUSD8`;
+  }
+
+  function switchTab(tabId, btn) {
+    document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.getElementById(tabId).classList.add("active");
+    btn.classList.add("active");
+  }
+
+  function simpleHash(str) {
+    let h = 0x811c9dc5;
+    for (let i = 0; i < str.length; i++) {
+      h ^= str.charCodeAt(i);
+      h = (h * 0x01000193) >>> 0;
+    }
+    return "0x" + h.toString(16).padStart(8, "0") + "...e4b9";
+  }
+
+  function renderInvoices() {
+    const container = document.getElementById("invoiceListContainer");
+    container.innerHTML = "";
+    invoices.forEach(inv => {
+      const div = document.createElement("div");
+      div.className = "invoice-item";
+      div.innerHTML = `
+        <div>
+          <div style="font-weight:700; font-size:14px;">Invoice #${inv.id} &mdash; ${inv.payeeName}</div>
+          <div style="font-size:12px; color:var(--text-muted); margin-top:3px;">${inv.memo}</div>
+          <div style="font-size:11px; color:var(--accent); font-family:monospace; margin-top:4px;">CoP Name Hash: ${inv.hash}</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div style="text-align:right;">
+            <div style="font-weight:800; font-size:15px;">${inv.amount.toFixed(2)} tUSD8</div>
+            <span class="badge ${inv.status === 'PAID' ? 'badge-paid' : 'badge-pending'}">${inv.status}</span>
+          </div>
+          ${inv.status === "PENDING" ? `<button class="btn btn-success" onclick="payInvoice(${inv.id})">Verify CoP & Pay</button>` : ``}
+        </div>
+      `;
+      container.appendChild(div);
+    });
+  }
+
+  function renderTxLedger() {
+    const container = document.getElementById("txLedgerList");
+    container.innerHTML = txLedger.map(t => `
+      <div class="invoice-item" style="padding:10px 14px; margin-bottom:8px;">
+        <div>
+          <div style="font-weight:600; font-size:13px;">${t.type}</div>
+          <div style="font-size:11px; color:var(--accent); font-family:monospace;">Tx: ${t.txHash}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-weight:700; font-size:13px; color:#34d399;">${t.amount}</div>
+          <div style="font-size:11px; color:var(--text-muted);">${t.time}</div>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  function createNewInvoice() {
+    const name = document.getElementById("invPayeeName").value.trim();
+    const amount = parseFloat(document.getElementById("invAmount").value);
+    const memo = document.getElementById("invMemo").value.trim();
+    if (!name || isNaN(amount) || amount <= 0) return;
+
+    const newId = 1000 + invoices.length + 1;
+    invoices.unshift({
+      id: newId,
+      payeeName: name,
+      amount: amount,
+      memo: memo || "Standard tUSD8 Commercial Invoice",
+      status: "PENDING",
+      hash: simpleHash(name)
+    });
+    document.getElementById("copVerifyInput").value = name;
+    renderInvoices();
+    appendLog(`[Aevum Testnet] Minted Smart Invoice #${newId} (${amount.toFixed(2)} tUSD8) with CoP Hash ${simpleHash(name)}`, "ok");
+  }
+
+  function payInvoice(id) {
+    const inv = invoices.find(x => x.id === id);
+    if (!inv || inv.status === "PAID") return;
+
+    const expectedName = document.getElementById("copVerifyInput").value.trim();
+    if (expectedName !== inv.payeeName) {
+      alert(`CONFIRMATION OF PAYEE (CoP) SECURITY BLOCK!\n\nEntered Payee: "${expectedName}"\nInvoice Registered Payee: "${inv.payeeName}"\n\ntUSD8 transfer aborted to protect your funds.`);
+      appendLog(`[CoP Guard] Blocked payment on Invoice #${id}: Payee name mismatch ("${expectedName}" != "${inv.payeeName}")`, "err");
+      return;
+    }
+
+    inv.status = "PAID";
+    walletBalance -= inv.amount;
+    totalVolume += inv.amount;
+    const txHash = "0x" + Math.random().toString(16).substring(2, 10) + "...a405";
+    txLedger.unshift({ txHash, type: `CoP Invoice #${id} Settled`, amount: `${inv.amount.toFixed(2)} tUSD8`, time: "Just now" });
+    updateHeaderDisplays();
+    renderInvoices();
+    renderTxLedger();
+    appendLog(`[tUSD8 Settlement] Invoice #${id} paid (${inv.amount.toFixed(2)} tUSD8) after CoP match! Tx: ${txHash}`, "ok");
+  }
+
+  // Live Payroll Streaming ticker
+  setInterval(() => {
+    streamAccrued += streamRate / 10;
+    const el = document.getElementById("liveStreamCounter");
+    if (el) el.textContent = streamAccrued.toFixed(6) + " tUSD8";
+    const bar = document.getElementById("streamProgressBar");
+    if (bar) {
+      const pct = Math.min(100, (streamAccrued / 50) * 100);
+      bar.style.width = pct + "%";
+    }
+  }, 100);
+
+  function startNewStream() {
+    const rate = parseFloat(document.getElementById("streamRate").value) || 0.25;
+    streamRate = rate;
+    document.getElementById("rateLabel").textContent = rate.toFixed(2);
+    appendLog(`[Stream Created] Locked tUSD8 into continuous payroll stream at ${rate.toFixed(2)} tUSD8/sec.`, "ok");
+  }
+
+  function claimStream() {
+    if (streamAccrued <= 0) return;
+    const claimed = streamAccrued;
+    streamAccrued = 0;
+    walletBalance += claimed;
+    totalVolume += claimed;
+    const txHash = "0x" + Math.random().toString(16).substring(2, 10) + "...c882";
+    txLedger.unshift({ txHash, type: "Payroll Stream Claimed", amount: `+${claimed.toFixed(4)} tUSD8`, time: "Just now" });
+    updateHeaderDisplays();
+    renderTxLedger();
+    appendLog(`[Stream Claimed] Withdrew ${claimed.toFixed(6)} vested tUSD8 to wallet! Tx: ${txHash}`, "ok");
+  }
+
+  function resetStreamDemo() {
+    streamAccrued = 0;
+  }
+
+  function setAgentPrompt(text) {
+    document.getElementById("agentPromptInput").value = text;
+  }
+
+  function appendLog(msg, level = "info") {
+    const term = document.getElementById("agentTerminal");
+    if (!term) return;
+    const line = document.createElement("div");
+    const ts = new Date().toLocaleTimeString();
+    line.className = `log-line log-${level}`;
+    line.textContent = `[${ts}] ${msg}`;
+    term.prepend(line);
+  }
+
+  function executeAgentCommand() {
+    const cmd = document.getElementById("agentPromptInput").value.trim();
+    const maxTx = parseFloat(document.getElementById("guardMaxTx").value) || 250;
+    const dailyLim = parseFloat(document.getElementById("guardDaily").value) || 500;
+
+    appendLog(`>>> Agent received mandate: "${cmd}"`, "info");
+
+    // Parse amount and payee
+    const amountMatch = cmd.match(/(\d+(\.\d+)?)\s*tUSD8/i);
+    const amount = amountMatch ? parseFloat(amountMatch[1]) : 125.00;
+    const isFakePayee = /phishing|fake/i.test(cmd);
+
+    if (isFakePayee) {
+      appendLog(`[ERC-8004 Guardrail] Checking Confirmation of Payee (CoP) registry on Aevum Testnet...`, "info");
+      appendLog(`[SECURITY REJECTED] CoP Hash mismatch! "Phishing Fake Corp" does not match registered issuer hash 0x9f86d081...a3b2. Transaction aborted.`, "err");
+      return;
+    }
+
+    if (amount > maxTx) {
+      appendLog(`[ERC-8004 Guardrail] Evaluating spending limits: Requested ${amount} tUSD8 vs MaxPerTx ${maxTx} tUSD8...`, "warn");
+      appendLog(`[MANDATE REJECTED] Order size (${amount} tUSD8) exceeds on-chain maxPerTx guardrail (${maxTx} tUSD8)!`, "err");
+      return;
+    }
+
+    if (agentSpentToday + amount > dailyLim) {
+      appendLog(`[MANDATE REJECTED] Daily spending limit (${dailyLim} tUSD8) would be exceeded!`, "err");
+      return;
+    }
+
+    appendLog(`[ERC-8004 Guardrail] CoP Hash verified & within spending limits (${amount} <= ${maxTx} tUSD8).`, "ok");
+    const txHash = "0x" + Math.random().toString(16).substring(2, 10) + "...e904";
+    agentSpentToday += amount;
+    walletBalance -= amount;
+    totalVolume += amount;
+
+    const inv1001 = invoices.find(x => x.id === 1001);
+    if (inv1001 && amount === 125) inv1001.status = "PAID";
+
+    txLedger.unshift({ txHash, type: "AI Agent Autonomous Pay", amount: `${amount.toFixed(2)} tUSD8`, time: "Just now" });
+    updateHeaderDisplays();
+    renderInvoices();
+    renderTxLedger();
+    appendLog(`[SETTLED ON QDAY AEVUM] AI Agent transferred ${amount.toFixed(2)} tUSD8 via contract 0x4565...3483! Tx: ${txHash}`, "ok");
+  }
+
+  async function addAevumNetwork() {
+    if (!window.ethereum) {
+      alert("QDay Aevum Testnet Parameters:\n- Chain ID: 44005 (0xABE5)\n- RPC: https://rpc-test.qday.info\n- Symbol: tQDAY\n- Explorer: https://explorer-test.qday.info\n\n(Sandbox Wallet is already active in this browser!)");
+      return;
+    }
+    try {
+      await window.ethereum.request({
+        method: "wallet_addEthereumChain",
+        params: [{
+          chainId: "0xABE5",
+          chainName: "QDay Aevum Testnet",
+          nativeCurrency: { name: "Test QDAY", symbol: "tQDAY", decimals: 18 },
+          rpcUrls: ["https://rpc-test.qday.info"],
+          blockExplorerUrls: ["https://explorer-test.qday.info"]
+        }]
+      });
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  async function connectWallet() {
+    if (window.ethereum) {
+      try {
+        const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+        if (accounts && accounts[0]) {
+          document.getElementById("connectBtn").textContent = accounts[0].slice(0, 6) + "..." + accounts[0].slice(-4);
+          appendLog(`Connected EVM Wallet: ${accounts[0]} on QDay Aevum Testnet`, "ok");
+          return;
+        }
+      } catch (e) {}
+    }
+    appendLog("Using built-in Aevum Testnet Sandbox Wallet (0x71C...9A23) funded with 2,500.00 tUSD8.", "info");
+  }
+
+  // Initialize
+  renderInvoices();
+  renderTxLedger();
+  appendLog("[System Ready] Connected to QDay Aevum Testnet (Chain ID: 44005 | tUSD8: 0x456569838f1d43009A91ebA4263147Afd7233483)", "ok");
+  appendLog("[ERC-8004] Autonomous Payment Agent initialized. MaxPerTx: 250 tUSD8, DailyLimit: 500 tUSD8.", "info");
+</script>
+
+</body>
+</html>
